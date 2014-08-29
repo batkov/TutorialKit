@@ -2,19 +2,19 @@
  TutorialKit.m
  Created by Alex on 4/21/14.
  Copyright (c) 2014 DANIEL. All rights reserved.
- 
+
  The MIT License (MIT)
- 
+
  Permission is hereby granted, free of charge, to any person obtaining a copy of
  this software and associated documentation files (the "Software"), to deal in
  the Software without restriction, including without limitation the rights to
  use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
  the Software, and to permit persons to whom the Software is furnished to do so,
  subject to the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included in all
  copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -65,34 +65,34 @@
         // a tutorial view is already visible
         return NO;
     }
-    
+
     NSMutableDictionary *sequenceData = [TutorialKit.sharedInstance.sequences objectForKey:name];
     if(!sequenceData) {
         // assert?
         return NO;
     }
-    
+
     if(![sequenceData isKindOfClass:NSMutableDictionary.class]) {
         sequenceData = sequenceData.mutableCopy;
     }
-    
+
     NSNumber *step = [sequenceData objectForKey:TKStep];
     if(nil == step) {
         step = @(0);
         [sequenceData setObject:step forKey:TKStep];
     }
-    
+
     NSArray *sequence = [sequenceData objectForKey:TKSequence];
     if(!sequence) {
         // assert?
         return NO;
     }
-    
+
     if(step.integerValue >= sequence.count || step.integerValue < 0) {
         // sequence step is invalid or sequence is over
         return NO;
     }
-    
+
     NSMutableDictionary *current = [sequence objectAtIndex:step.integerValue];
     if(!current) {
         // assert?
@@ -106,15 +106,15 @@
     if(![current objectForKey:TKMessageFont]) {
         [current setObject:TutorialKit.sharedInstance.labelFont forKey:TKMessageFont];
     }
-    
+
     if(![current objectForKey:TKMessageColor]) {
         [current setObject:TutorialKit.sharedInstance.labelColor forKey:TKMessageColor];
     }
-    
+
     if(![current objectForKey:TKBlurAmount]) {
         [current setObject:@(TutorialKit.sharedInstance.blurAmount) forKey:TKBlurAmount];
     }
-    
+
     if([current objectForKey:TKHighlightViewTag]) {
         UIView *highlightView = [TutorialKit.sharedInstance
                                  findViewWithTag:[current objectForKey:TKHighlightViewTag]];
@@ -127,20 +127,31 @@
         }
     }
 
+    if([current objectForKey:TKClickableViewTag]) {
+        UIView *clickableView = [TutorialKit.sharedInstance findViewWithTag:[current objectForKey:TKClickableViewTag]];
+
+        if(clickableView) {
+            [current setObject:clickableView forKey:TKClickableView];
+        }
+        else {
+            return NO;
+        }
+    }
+
     TutorialKitView *tkv = [TutorialKitView tutorialViewWithDictionary:current];
     if(tkv) {
         tkv.sequenceStep = step.integerValue;
         tkv.sequenceName = name;
         tkv.tintColor = TutorialKit.sharedInstance.backgroundTintColor;
-        UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc]
-                                                 initWithTarget:TutorialKit.sharedInstance
-                                                 action:@selector(dismissTutorialView:)];
-        [tkv addGestureRecognizer:tapRecognizer];
+//        UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc]
+//                                                 initWithTarget:TutorialKit.sharedInstance
+//                                                 action:@selector(dismissTutorialView:)];
+//        [tkv addGestureRecognizer:tapRecognizer];
         TutorialKit.sharedInstance.currentTutorialView = tkv;
         TutorialKit.sharedInstance.shouldContinue = shouldContinue;
         [TutorialKit presentTutorialView:tkv withAnimation:YES];
     }
-    
+
     return tkv != NULL;
 }
 
@@ -160,7 +171,7 @@
     if([TutorialKit currentStepForTutorialWithName:name] != step) {
         return NO;
     }
-    
+
     return [TutorialKit advanceTutorialSequenceWithName:name andContinue:shouldContinue];
 }
 
@@ -183,7 +194,7 @@
         }
         return step;
     }
-    
+
     return 0;
 }
 
@@ -217,7 +228,7 @@
         // @TODO Error message?
         return;
     }
-    
+
     NSInteger curStep = [TutorialKit currentStepForTutorialWithName:name];
     NSArray *steps = existingSequence[TKSequence];
     if(step >= steps.count) {
@@ -233,7 +244,7 @@
     else {
         steps = [sequence arrayByAddingObjectsFromArray:steps];
     }
-    
+
     [TutorialKit.sharedInstance.sequences setObject:@{TKSequence:steps,TKStep:@(curStep)} forKey:name];
 }
 
@@ -246,7 +257,7 @@
         [window addSubview:view];
         view.frame = window.bounds;
         [view setNeedsLayout];
-        
+
         if(animate) {
             // fade in
             view.alpha = 0;
@@ -268,9 +279,9 @@
         if(![sequence isKindOfClass:NSMutableDictionary.class]) {
             sequence = sequence.mutableCopy;
         }
-        
+
         [sequence setObject:@(step) forKey:TKStep];
-        
+
         // save to NSUserDefaults
         NSMutableDictionary *steps = [NSUserDefaults.standardUserDefaults objectForKey:TKUserDefaultsKey];
         if(!steps) {
@@ -318,7 +329,7 @@
     if(!_backgroundTintColor) {
         _backgroundTintColor = [UIColor colorWithWhite:1.f alpha:0.5];
     }
-    
+
     return _backgroundTintColor;
 }
 
@@ -336,10 +347,10 @@
         else if(![sequenceData isKindOfClass:NSMutableDictionary.class]) {
             sequenceData = sequenceData.mutableCopy;
         }
-        
+
         // increment the tutorial step
         [sequenceData setObject:@(view.sequenceStep + 1) forKey:TKStep];
-        
+
         // save to NSUserDefaults
         NSMutableDictionary *steps = [NSUserDefaults.standardUserDefaults objectForKey:TKUserDefaultsKey];
         if(!steps) {
@@ -350,7 +361,7 @@
         }
         [steps setObject:@(view.sequenceStep + 1) forKey:view.sequenceName];
         [NSUserDefaults.standardUserDefaults setObject:steps forKey:TKUserDefaultsKey];
-        
+
         // run the callback if one exists
         if(view.values && [view.values objectForKey:TKCompleteCallback]) {
             void (^callback)();
@@ -363,7 +374,7 @@
     if(view == TutorialKit.sharedInstance.currentTutorialView) {
         TutorialKit.sharedInstance.currentTutorialView = nil;
     }
-    
+
     [UIView animateWithDuration:0.5 animations:^{
         view.alpha = 0;
     } completion:^(BOOL finished) {
@@ -384,7 +395,7 @@
     for(UIWindow *window in UIApplication.sharedApplication.windows) {
         [window.subviews enumerateObjectsUsingBlock:^(UIView *view, NSUInteger idx, BOOL *stop) {
             if(view.hidden || view.alpha == 0) return;
-            
+
             tagView = [view findViewRecursively:^BOOL(UIView *subview, BOOL *stop) {
                 if(subview.tag == tag.integerValue && !subview.hidden &&
                    subview.alpha != 0) {
@@ -394,11 +405,11 @@
                 // return yes if should recurse further
                 return !subview.hidden && subview.alpha != 0;
             }];
-            
+
             if(tagView) *stop = YES;
         }];
     }
-    
+
     return tagView;
 }
 
@@ -427,7 +438,7 @@
         // assert?
         return;
     }
-    
+
     [self dismissTutorialView:(TutorialKitView *)gesture.view];
 }
 
@@ -450,7 +461,7 @@
         tk.currentTutorialView = nil;
         tk.blurAmount = 1.0;
     });
-    
+
     return tk;
 }
 

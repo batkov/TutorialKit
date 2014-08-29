@@ -2,46 +2,46 @@
  TutorialKitView.m
  Created by Alex on 4/21/14.
  Copyright (c) 2014 DANIEL. All rights reserved.
- 
+
  The MIT License (MIT)
- 
+
  Permission is hereby granted, free of charge, to any person obtaining a copy of
  this software and associated documentation files (the "Software"), to deal in
  the Software without restriction, including without limitation the rights to
  use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
  the Software, and to permit persons to whom the Software is furnished to do so,
  subject to the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included in all
  copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
  COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- 
+
  Contains modified blur code from FXBlurView
  https://github.com/nicklockwood/FXBlurView
 
  Copyright (C) 2013 Charcoal Design
 
  FXBlurView License:
- 
- This software is provided 'as-is', without any express or implied warranty. 
- In no event will the authors be held liable for any damages arising from the 
+
+ This software is provided 'as-is', without any express or implied warranty.
+ In no event will the authors be held liable for any damages arising from the
  use of this software.
- 
- Permission is granted to anyone to use this software for any purpose, including 
- commercial applications, and to alter it and redistribute it freely, subject to 
+
+ Permission is granted to anyone to use this software for any purpose, including
+ commercial applications, and to alter it and redistribute it freely, subject to
  the following restrictions:
- 
- The origin of this software must not be misrepresented; you must not claim that 
- you wrote the original software. If you use this software in a product, an 
- acknowledgment in the product documentation would be appreciated but is not 
+
+ The origin of this software must not be misrepresented; you must not claim that
+ you wrote the original software. If you use this software in a product, an
+ acknowledgment in the product documentation would be appreciated but is not
  required.
- Altered source versions must be plainly marked as such, and must not be 
+ Altered source versions must be plainly marked as such, and must not be
  misrepresented as being the original software.
  This notice may not be removed or altered from any source distribution.
  */
@@ -65,11 +65,11 @@ extern UIFont *gTutorialLabelFont;
 {
     //image must be nonzero size
     if (floorf(self.size.width) * floorf(self.size.height) <= 0.0f) return self;
-    
+
     //boxsize must be an odd integer
     uint32_t boxSize = (uint32_t)(radius * self.scale);
     if (boxSize % 2 == 0) boxSize ++;
-    
+
     //create image buffers
     CGImageRef imageRef = self.CGImage;
     vImage_Buffer buffer1, buffer2;
@@ -79,48 +79,48 @@ extern UIFont *gTutorialLabelFont;
     size_t bytes = buffer1.rowBytes * buffer1.height;
     buffer1.data = malloc(bytes);
     buffer2.data = malloc(bytes);
-    
+
     //create temp buffer
     void *tempBuffer = malloc((size_t)vImageBoxConvolve_ARGB8888(&buffer1, &buffer2, NULL, 0, 0, boxSize, boxSize,
                                                                  NULL, kvImageEdgeExtend + kvImageGetTempBufferSize));
-    
+
     //copy image data
     CFDataRef dataSource = CGDataProviderCopyData(CGImageGetDataProvider(imageRef));
     memcpy(buffer1.data, CFDataGetBytePtr(dataSource), bytes);
     CFRelease(dataSource);
-    
+
     for (NSUInteger i = 0; i < iterations; i++) {
         //perform blur
         vImageBoxConvolve_ARGB8888(&buffer1, &buffer2, tempBuffer, 0, 0, boxSize, boxSize, NULL, kvImageEdgeExtend);
-        
+
         //swap buffers
         void *temp = buffer1.data;
         buffer1.data = buffer2.data;
         buffer2.data = temp;
     }
-    
+
     //free buffers
     free(buffer2.data);
     free(tempBuffer);
-    
+
     //create image context from buffer
     CGContextRef ctx = CGBitmapContextCreate(buffer1.data, buffer1.width, buffer1.height,
                                              8, buffer1.rowBytes, CGImageGetColorSpace(imageRef),
                                              CGImageGetBitmapInfo(imageRef));
-    
+
     //apply tint
     if (tintColor && CGColorGetAlpha(tintColor.CGColor) > 0.0f)
     {
 //        CGContextSetFillColorWithColor(ctx, [tintColor colorWithAlphaComponent:0.5].CGColor);
 //        CGContextSetBlendMode(ctx, kCGBlendModePlusLighter);
-        
+
 //        CGContextSetFillColorWithColor(ctx, tintColor.CGColor);
         // prevent going full alpha
         CGContextSetFillColorWithColor(ctx, [tintColor colorWithAlphaComponent:CGColorGetAlpha(tintColor.CGColor) * 0.9].CGColor);
         CGContextSetBlendMode(ctx, kCGBlendModeNormal);
         CGContextFillRect(ctx, CGRectMake(0, 0, buffer1.width, buffer1.height));
     }
-    
+
     //create image from context
     imageRef = CGBitmapContextCreateImage(ctx);
     UIImage *image = [UIImage imageWithCGImage:imageRef scale:self.scale orientation:self.imageOrientation];
@@ -148,6 +148,7 @@ extern UIFont *gTutorialLabelFont;
 @property (nonatomic) CGFloat blurRadius;
 @property (nonatomic) NSInteger blurIterations;
 @property (nonatomic, weak) UIImageView *blurView;
+@property (nonatomic, weak) UIView *clickView;
 @end
 
 @implementation TutorialKitView
@@ -162,6 +163,7 @@ extern UIFont *gTutorialLabelFont;
                           highlightPoint:(CGPoint)point
                   highlightPointRelative:(BOOL)relativeHighlightPoint
                          highlightRadius:(float)radius
+                           clickableView:(UIView *)clickView
 {
     TutorialKitView *tkv = [[TutorialKitView alloc]
                             initWithFrame:UIScreen.mainScreen.bounds];
@@ -177,6 +179,7 @@ extern UIFont *gTutorialLabelFont;
     tkv.highlightPointRelative = relativeHighlightPoint;
     tkv.highlightRadius = radius;
     tkv.gestureView.hidden = YES;
+    tkv.clickView = clickView;
     return tkv;
 }
 
@@ -224,7 +227,7 @@ extern UIFont *gTutorialLabelFont;
         msgPoint = [[values objectForKey:TKMessageRelativePoint] CGPointValue];
         msgPointRelative = YES;
     }
-    
+
     CGPoint highlightPoint = CGPointZero;
     BOOL highlightPointRelative = NO;
     if([values objectForKey:TKHighlightPoint]) {
@@ -234,12 +237,12 @@ extern UIFont *gTutorialLabelFont;
         highlightPoint = [[values objectForKey:TKHighlightRelativePoint] CGPointValue];
         highlightPointRelative = YES;
     }
-    
+
     CGFloat radius = 0.0f;
     if([values objectForKey:TKHighlightRadius]) {
         radius = [[values objectForKey:TKHighlightRadius] floatValue];
     }
-    
+
     TutorialKitView *tkv = nil;
     if([values objectForKey:TKHighlightView]) {
         tkv = [TutorialKitView tutorialViewWithMessage:[values objectForKey:TKMessage]
@@ -250,7 +253,8 @@ extern UIFont *gTutorialLabelFont;
                                           highlightView:[values objectForKey:TKHighlightView]
                                          highlightPoint:highlightPoint
                                 highlightPointRelative:highlightPointRelative
-                                        highlightRadius:radius];
+                                        highlightRadius:radius
+                                         clickableView:[values objectForKey:TKClickableView]];
     }
     else {
         CGPoint swipeStart = CGPointZero;
@@ -262,7 +266,7 @@ extern UIFont *gTutorialLabelFont;
             swipeStart = [[values objectForKey:TKSwipeGestureRelativeStartPoint] CGPointValue];
             swipePointsRelative = YES;
         }
-        
+
         CGPoint swipeEnd = CGPointZero;
         if([values objectForKey:TKSwipeGestureEndPoint]) {
             swipeEnd = [[values objectForKey:TKSwipeGestureEndPoint] CGPointValue];
@@ -271,8 +275,8 @@ extern UIFont *gTutorialLabelFont;
             swipeEnd = [[values objectForKey:TKSwipeGestureRelativeEndPoint] CGPointValue];
             swipePointsRelative = YES;
         }
-        
-        
+
+
         tkv = [TutorialKitView tutorialViewWithMessage:[values objectForKey:TKMessage]
                                          messageCenter:msgPoint
                                  messageCenterRelative:msgPointRelative
@@ -283,7 +287,7 @@ extern UIFont *gTutorialLabelFont;
                                 swipePositionsRelative:swipePointsRelative
                                        highlightRadius:radius];
     }
-    
+
     if(tkv) {
         if([values objectForKey:TKBlurAmount]) {
             tkv.blurAmount = [[values objectForKey:TKBlurAmount] floatValue];
@@ -299,33 +303,33 @@ extern UIFont *gTutorialLabelFont;
     self = [super initWithFrame:frame];
     if (self) {
         self.backgroundColor = UIColor.clearColor;
-        
+
         self.blurAmount = 1.0;
         self.blurIterations = 3;
         self.blurRadius = 40.f;
-        
+
         self.gestureStart = CGPointZero;
         self.gestureEnd = CGPointZero;
 
         self.highlightView = nil;
-        
+
         self.sequenceName = nil;
         self.sequenceStep = 0;
-        
+
         self.tintColor = [UIColor colorWithWhite:1.0 alpha:0.5];
 
         self.updating = NO;
-        
+
         UIImageView *blur = [[UIImageView alloc] initWithFrame:frame];
         [self addSubview:blur];
         self.blurView = blur;
-        
+
         // touch indicator
         CGFloat radius = 36.f;
         if (UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPhone) {
             radius = 20.f;
         }
-        
+
         UIView *gesture = [[UIView alloc] initWithFrame:CGRectMake(0,0,radius*2,radius*2)];
         gesture.backgroundColor = [UIColor colorWithWhite:0.5 alpha:0.7];
         gesture.layer.cornerRadius = radius;
@@ -341,12 +345,12 @@ extern UIFont *gTutorialLabelFont;
         label.backgroundColor = UIColor.clearColor;
         label.numberOfLines = 0;
         [self addSubview:label];
-        
+
         self.messageLabel = label;
-        
+
         self.userInteractionEnabled = YES;
         self.exclusiveTouch = NO;
-        
+
         // listen for orientation changes
         [NSNotificationCenter.defaultCenter
          addObserver:self
@@ -371,7 +375,7 @@ extern UIFont *gTutorialLabelFont;
 {
     [self updateRotation];
     [super layoutSubviews];
-    
+
     if(self.messageLabel && self.messageLabel.text) {
         [self.messageLabel sizeToFit];
         CGFloat maxWidth = self.frame.size.width - kTKMessagePadding * 2.f;
@@ -380,18 +384,18 @@ extern UIFont *gTutorialLabelFont;
             self.messageLabel.frame = CGRectMake(0,0,fit.width,fit.height);
             self.messageLabel.textAlignment = NSTextAlignmentCenter;
         }
-        
+
         self.messageLabel.center = self.messageCenterRelative ? [self getAbsolutePoint:self.messageCenter] : self.messageCenter;
-        
+
         // prevent aliasing
         CGRect messageFrame = self.messageLabel.frame;
         messageFrame.origin.x = floor(messageFrame.origin.x);
         messageFrame.origin.y = floor(messageFrame.origin.y);
         self.messageLabel.frame = messageFrame;
     }
-    
+
     self.blurView.frame = self.bounds;
-    
+
     [self updateAsynchronously:YES completion:nil];
 }
 
@@ -400,9 +404,9 @@ extern UIFont *gTutorialLabelFont;
 {
     UIGraphicsBeginImageContext(imageView.frame.size);
     CGContextRef context = UIGraphicsGetCurrentContext();
-    
+
     UIImage *maskImage = nil;
-    
+
     if(self.highlightView) {
         CGContextSetRGBFillColor(context, 1.0f, 1.0f, 1.0f, 1.0f);
         CGContextFillRect(context, imageView.bounds);
@@ -426,7 +430,7 @@ extern UIFont *gTutorialLabelFont;
         CGPoint highlightPoint = self.highlightPointRelative ?
             [self getAbsolutePoint:self.highlightPoint] :
             self.highlightPoint;
-        
+
         CGContextDrawRadialGradient(context,
                                     gradient,
                                     highlightPoint,
@@ -434,15 +438,15 @@ extern UIFont *gTutorialLabelFont;
                                     highlightPoint,
                                     MAX(10,self.highlightRadius),
                                     kCGGradientDrawsAfterEndLocation);
-        
+
         CGGradientRelease(gradient);
         CGColorSpaceRelease(colorSpace);
     }
-    
+
     maskImage = UIGraphicsGetImageFromCurrentImageContext();
-    
+
     UIGraphicsEndImageContext();
-    
+
     if(maskImage) {
         CALayer *layerMask = CALayer.layer;
         layerMask.frame = imageView.bounds;
@@ -463,10 +467,22 @@ extern UIFont *gTutorialLabelFont;
 ////////////////////////////////////////////////////////////////////////////////
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
 {
-    // pass through and dismiss!
-    self.gestureView.hidden = YES;
-    [TutorialKit dismissCurrentTutorialView];
-    return nil;
+    if(!self.highlightView) {
+        self.gestureView.hidden = YES;
+        [TutorialKit dismissCurrentTutorialView];
+        return self;
+    } else {
+        CGPoint pointInWindow = [self.superview convertPoint:point toView:nil];
+        UIView *properView = self.clickView ?: self.highlightView;
+        CGRect clickFrame = [properView.superview convertRect:properView.frame toView:self.window.rootViewController.view];
+        if(CGRectContainsPoint(clickFrame, pointInWindow)) {
+            self.gestureView.hidden = YES;
+            [TutorialKit dismissCurrentTutorialView];
+            return nil;
+        } else {
+            return self;
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -478,7 +494,7 @@ extern UIFont *gTutorialLabelFont;
     while (blurlayer.superlayer && blurlayer.superlayer != underlyingLayer) {
         blurlayer = blurlayer.superlayer;
     }
-    
+
     NSMutableArray *layers = [NSMutableArray array];
     NSUInteger index = [underlyingLayer.sublayers indexOfObject:blurlayer];
     if (index != NSNotFound) {
@@ -497,7 +513,7 @@ extern UIFont *gTutorialLabelFont;
 - (void)onApplicationDidChangeStatusBarOrientationNotification
 {
     if(self.alpha <= 0.f) return;
-    
+
     [UIView animateWithDuration:0.25 animations:^{
         self.alpha = 0;
     } completion:^(BOOL finished) {
@@ -523,14 +539,14 @@ extern UIFont *gTutorialLabelFont;
     __strong CALayer *blurLayer = self.layer;
     __strong CALayer *underlyingLayer = self.superview.layer;
     CGRect bounds = blurLayer.bounds;
-    
+
     CGFloat scale = 0.5;
     if (self.blurIterations) {
         CGFloat blockSize = 12.0f/self.blurIterations;
         scale = blockSize/MAX(blockSize * 2, self.blurRadius);
         scale = 1.0f/floorf(1.0f/scale);
     }
-    
+
     CGSize size = bounds.size;
     if (self.contentMode == UIViewContentModeScaleToFill ||
         self.contentMode == UIViewContentModeScaleAspectFill ||
@@ -544,9 +560,9 @@ extern UIFont *gTutorialLabelFont;
         //prevents pixelation on old devices
         scale = 1.0f;
     }
-    
+
     UIInterfaceOrientation orientation = UIApplication.sharedApplication.statusBarOrientation;
-    
+
     CGAffineTransform transform = CGAffineTransformIdentity;
     if(orientation == UIInterfaceOrientationLandscapeLeft) {
         transform = CGAffineTransformRotate(transform, M_PI / 2.f);
@@ -565,7 +581,7 @@ extern UIFont *gTutorialLabelFont;
     CGContextRef context = UIGraphicsGetCurrentContext();
     if(!context) return nil;
     CGContextConcatCTM(context, transform);
-    
+
     NSArray *hiddenViews = [self prepareUnderlyingViewForSnapshot];
 
     [underlyingLayer renderInContext:context];
@@ -573,7 +589,7 @@ extern UIFont *gTutorialLabelFont;
         layer.hidden = NO;
     }
     //[self drawTintInContext:context];
-    
+
     UIImage *snapshot = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     return snapshot;
@@ -583,7 +599,7 @@ extern UIFont *gTutorialLabelFont;
 - (void)animateGesture
 {
     if(self.gestureView.hidden) return;
-    
+
     self.gestureView.center = self.gesturePointsRelative ? [self getAbsolutePoint:self.gestureStart] : self.gestureStart;
     [UIView animateWithDuration:kTKGestureAnimationDuration/3.f animations:^{
         self.gestureView.alpha = 1.0;
@@ -605,12 +621,12 @@ extern UIFont *gTutorialLabelFont;
 {
     [self.blurView setImage:image];
     [self.blurView setContentScaleFactor:image.scale];
-    
+
     // only apply mask if we have a highlight radius or a view to highlight
     if(self.highlightRadius > 0 || self.highlightView) {
         [self applyMaskToImage:self.blurView];
     }
-    
+
     if (completion) {
         completion();
     }
@@ -638,7 +654,7 @@ extern UIFont *gTutorialLabelFont;
         size.width = size.height;
         size.height = tmp;
     }
-    
+
     return CGPointMake(MAX(0.f,MIN(1.f,relative.x)) * size.width,
                        MAX(0.f,MIN(1.f,relative.y)) * size.height
                        );
@@ -681,7 +697,7 @@ extern UIFont *gTutorialLabelFont;
         case UIInterfaceOrientationLandscapeRight: angle = M_PI/2.f; break;
     }
     self.transform = CGAffineTransformMakeRotation(angle);
-    
+
     if(swap) {
         self.bounds = CGRectMake(0,
                                 0,
