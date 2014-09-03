@@ -227,6 +227,10 @@ extern UIFont *gTutorialLabelFont;
         msgPoint = [[values objectForKey:TKMessageRelativePoint] CGPointValue];
         msgPointRelative = YES;
     }
+    else if ([values objectForKey:TKMessageRelativePointX] && [values objectForKey:TKMessageRelativePointY]) {
+        msgPoint = CGPointMake([[values objectForKey:TKMessageRelativePointX] floatValue], [[values objectForKey:TKMessageRelativePointY] floatValue]);
+        msgPointRelative = YES;
+    }
 
     CGPoint highlightPoint = CGPointZero;
     BOOL highlightPointRelative = NO;
