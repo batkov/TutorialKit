@@ -93,14 +93,10 @@
         return NO;
     }
 
-    NSMutableDictionary *current = [sequence objectAtIndex:step.integerValue];
+    NSMutableDictionary *current = [[sequence objectAtIndex:step.integerValue] mutableCopy];
     if(!current) {
         // assert?
         return NO;
-    }
-    else if(![current isKindOfClass:NSMutableDictionary.class]) {
-        // ensure this is a mutable copy
-        current = current.mutableCopy;
     }
 
     if(![current objectForKey:TKMessageFont]) {
