@@ -410,8 +410,9 @@ extern UIFont *gTutorialLabelFont;
     CGContextRef context = UIGraphicsGetCurrentContext();
 
     UIImage *maskImage = nil;
-
     if(self.highlightView) {
+        float opacity = self.highlightView.layer.shadowOpacity;
+        self.highlightView.layer.shadowOpacity = 0;
         CGContextSetRGBFillColor(context, 1.0f, 1.0f, 1.0f, 1.0f);
         CGContextFillRect(context, imageView.bounds);
 
@@ -419,6 +420,7 @@ extern UIFont *gTutorialLabelFont;
         CGContextTranslateCTM(context, bounds.origin.x, bounds.origin.y);
         CGContextSetBlendMode(context, kCGBlendModeClear);
         [self.highlightView.layer renderInContext:context];
+        self.highlightView.layer.shadowOpacity = opacity;
     }
     else {
         CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
