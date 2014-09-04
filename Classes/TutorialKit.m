@@ -123,11 +123,11 @@
         }
     }
 
-    if([current objectForKey:TKClickableViewTag]) {
-        UIView *clickableView = [TutorialKit.sharedInstance findViewWithTag:[current objectForKey:TKClickableViewTag]];
+    if([current objectForKey:TKClickViewTag]) {
+        UIView *clickableView = [TutorialKit.sharedInstance findViewWithTag:[current objectForKey:TKClickViewTag]];
 
         if(clickableView) {
-            [current setObject:clickableView forKey:TKClickableView];
+            [current setObject:clickableView forKey:TKClickView];
         }
         else {
             return NO;

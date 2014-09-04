@@ -43,8 +43,8 @@ static NSString* const TKSwipeGestureRelativeStartPoint = @"TKSwipeGestureRelati
 static NSString* const TKSwipeGestureEndPoint = @"TKSwipeGestureEndPoint";
 static NSString* const TKSwipeGestureRelativeEndPoint = @"TKSwipeGestureRelativeEndPoint";
 static NSString* const TKCompleteCallback = @"TKCompleteCallback";
-static NSString* const TKClickableView = @"TKClickableView";
-static NSString* const TKClickableViewTag = @"TKClickableViewTag";
+static NSString* const TKClickView = @"TKClickView";
+static NSString* const TKClickViewTag = @"TKClickViewTag";
 
 @interface TutorialKit : NSObject
 

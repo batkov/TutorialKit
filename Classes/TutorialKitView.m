@@ -258,7 +258,7 @@ extern UIFont *gTutorialLabelFont;
                                          highlightPoint:highlightPoint
                                 highlightPointRelative:highlightPointRelative
                                         highlightRadius:radius
-                                         clickableView:[values objectForKey:TKClickableView]];
+                                         clickableView:[values objectForKey:TKClickView]];
     }
     else {
         CGPoint swipeStart = CGPointZero;
@@ -469,16 +469,24 @@ extern UIFont *gTutorialLabelFont;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+//We always assume a highlightView is in place
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
 {
-    if(!self.highlightView) {
+    //If you don't have a clickView, then dismiss no matter where they click, but don't execute any events.
+    if(!self.clickView) {
         self.gestureView.hidden = YES;
         [TutorialKit dismissCurrentTutorialView];
         return self;
-    } else {
+    }
+//    if(!self.highlightView) {
+//        self.gestureView.hidden = YES;
+//        [TutorialKit dismissCurrentTutorialView];
+//        return self;
+//    }
+    //They have a clickView. If they tapped inside of it, then dismiss and execute the action. Otherwise, leave everything up
+    else {
         CGPoint pointInWindow = [self.superview convertPoint:point toView:nil];
-        UIView *properView = self.clickView ?: self.highlightView;
-        CGRect clickFrame = [properView.superview convertRect:properView.frame toView:self.window.rootViewController.view];
+        CGRect clickFrame = [self.clickView.superview convertRect:self.clickView.frame toView:self.window.rootViewController.view];
         if(CGRectContainsPoint(clickFrame, pointInWindow)) {
             self.gestureView.hidden = YES;
             [TutorialKit dismissCurrentTutorialView];
