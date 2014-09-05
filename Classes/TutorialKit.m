@@ -55,7 +55,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 + (BOOL)advanceTutorialSequenceWithName:(NSString *)name
 {
-    return [TutorialKit advanceTutorialSequenceWithName:name andContinue:YES];
+    return [TutorialKit advanceTutorialSequenceWithName:name andContinue:NO];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -145,6 +145,9 @@
 //        [tkv addGestureRecognizer:tapRecognizer];
         TutorialKit.sharedInstance.currentTutorialView = tkv;
         TutorialKit.sharedInstance.shouldContinue = shouldContinue;
+        if([current objectForKey:TKShouldContinue]) {
+            TutorialKit.sharedInstance.shouldContinue = YES;
+        }
         [TutorialKit presentTutorialView:tkv withAnimation:YES];
     }
 
@@ -374,11 +377,9 @@
     [UIView animateWithDuration:0.5 animations:^{
         view.alpha = 0;
     } completion:^(BOOL finished) {
+        [view removeFromSuperview];
         if(TutorialKit.sharedInstance.shouldContinue) {
-            [TutorialKit advanceTutorialSequenceWithName:view.sequenceName andContinue:YES];
-        }
-        else {
-            [view removeFromSuperview];
+            [TutorialKit advanceTutorialSequenceWithName:view.sequenceName];
         }
     }];
 }
