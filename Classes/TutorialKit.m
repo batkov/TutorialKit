@@ -55,7 +55,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 + (BOOL)advanceTutorialSequenceWithName:(NSString *)name
 {
-    return [TutorialKit advanceTutorialSequenceWithName:name andContinue:NO];
+    return [TutorialKit advanceTutorialSequenceWithName:name andContinue:YES];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -375,7 +375,7 @@
         view.alpha = 0;
     } completion:^(BOOL finished) {
         if(TutorialKit.sharedInstance.shouldContinue) {
-            [TutorialKit advanceTutorialSequenceWithName:view.sequenceName];
+            [TutorialKit advanceTutorialSequenceWithName:view.sequenceName andContinue:YES];
         }
         else {
             [view removeFromSuperview];
