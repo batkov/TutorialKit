@@ -387,11 +387,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 - (UIView *)findViewWithTag:(NSNumber *)tag
 {
-    // look for the view with this tag
-    __block UIView *tagView = nil;
+    UIView *tagView = nil;
     for(UIWindow *window in UIApplication.sharedApplication.windows) {
-        [window.subviews enumerateObjectsUsingBlock:^(UIView *view, NSUInteger idx, BOOL *stop) {
-            if(view.hidden || view.alpha == 0) return;
+        for(UIView *view in window.subviews) {
+            if(view.hidden || view.alpha == 0) {
+                continue;
+            }
 
             tagView = [view findViewRecursively:^BOOL(UIView *subview, BOOL *stop) {
                 if(subview.tag == tag.integerValue && !subview.hidden &&
@@ -400,11 +401,16 @@
                     return NO;
                 }
                 // return yes if should recurse further
-                return !subview.hidden && subview.alpha != 0;
+                return YES;
             }];
 
-            if(tagView) *stop = YES;
-        }];
+            if(tagView) {
+                break;
+            }
+        }
+        if(tagView) {
+            break;
+        }
     }
 
     return tagView;
