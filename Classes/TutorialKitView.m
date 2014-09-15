@@ -590,6 +590,10 @@ extern UIFont *gTutorialLabelFont;
         transform = CGAffineTransformTranslate(transform, -size.width, -size.height);
     }
 
+    if([[[UIDevice currentDevice] systemVersion] compare:@"8.0" options:NSNumericSearch] != NSOrderedAscending) {
+        transform = CGAffineTransformIdentity;
+    }
+
     UIGraphicsBeginImageContextWithOptions(size, YES, scale);
 
     CGContextRef context = UIGraphicsGetCurrentContext();
@@ -710,6 +714,12 @@ extern UIFont *gTutorialLabelFont;
         case UIInterfaceOrientationLandscapeLeft: angle = -M_PI/2.f; break;
         case UIInterfaceOrientationLandscapeRight: angle = M_PI/2.f; break;
     }
+
+    if([[[UIDevice currentDevice] systemVersion] compare:@"8.0" options:NSNumericSearch] != NSOrderedAscending) {
+        swap = NO;
+        angle = 0.0;
+    }
+
     self.transform = CGAffineTransformMakeRotation(angle);
 
     if(swap) {
