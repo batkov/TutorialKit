@@ -31,6 +31,7 @@ static NSString* const TKMessageColor = @"TKMessageColor";
 static NSString* const TKMessageFont = @"TKMessageFont";
 static NSString* const TKMessagePoint = @"TKMessagePoint"; // absolute 0..width, 0..height
 static NSString* const TKMessageRelativePoint = @"TKMessageRelativePoint"; // relative 0..1, 0..1
+static NSString* const TKMessageViewRelativePoint = @"TKMessageViewRelativePoint"; // relative to highlight or click views 0..width, 0..height
 static NSString* const TKMessageRelativePointX = @"TKMessageRelativePointX"; // relative 0..1
 static NSString* const TKMessageRelativePointY = @"TKMessageRelativePointY"; // relative 0..1
 static NSString* const TKHighlightView = @"TKHighlightView";

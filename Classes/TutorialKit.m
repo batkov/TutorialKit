@@ -111,11 +111,14 @@
         [current setObject:@(TutorialKit.sharedInstance.blurAmount) forKey:TKBlurAmount];
     }
 
+    
+    UIView * viewToRelateOn = nil;
     if([current objectForKey:TKHighlightViewTag]) {
         UIView *highlightView = [TutorialKit.sharedInstance
                                  findViewWithTag:[current objectForKey:TKHighlightViewTag]];
         if(highlightView) {
             [current setObject:highlightView forKey:TKHighlightView];
+            viewToRelateOn = highlightView;
         }
         else {
             // highlight view not found! assert?
@@ -128,12 +131,20 @@
 
         if(clickableView) {
             [current setObject:clickableView forKey:TKClickView];
+            viewToRelateOn = viewToRelateOn ? : clickableView;
         }
         else {
             return NO;
         }
     }
 
+    if (viewToRelateOn && [current objectForKey:TKMessageViewRelativePoint]) {
+        CGPoint relPoint = [[current objectForKey:TKMessageViewRelativePoint] CGPointValue];
+        CGPoint center = [viewToRelateOn.superview convertPoint:viewToRelateOn.center toView:nil];
+        [current setObject:[NSValue valueWithCGPoint:CGPointMake(center.x + relPoint.x, center.y + relPoint.y)]
+                    forKey:TKMessagePoint];
+    }
+    
     TutorialKitView *tkv = [TutorialKitView tutorialViewWithDictionary:current];
     if(tkv) {
         tkv.sequenceStep = step.integerValue;
