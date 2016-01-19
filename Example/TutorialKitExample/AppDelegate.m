@@ -18,19 +18,29 @@
     self.window.backgroundColor = [UIColor whiteColor];
     self.window.rootViewController = [[ExampleViewController alloc] init];
     
+    NSValue *relPoint = [NSValue valueWithCGPoint:
+                         CGPointMake(0, -50)];
+    
     NSValue *msgPoint = [NSValue valueWithCGPoint:
                          CGPointMake(0.5,0.7)];
     NSValue *swipeStart = [NSValue valueWithCGPoint:
                            CGPointMake(0.75,0.8)];
     NSValue *swipeEnd = [NSValue valueWithCGPoint:
-                           CGPointMake(0.25,0.8)];
+                         CGPointMake(0.25,0.8)];
     // set up a simple 3 step tutorial
     NSArray *steps = @[
+                       // Step -1 info
+                       @{
+                           TKMessage: @"Message before tutorial begins",
+                           TKMessageRelativePoint: msgPoint,
+                           TKShouldContinue: @YES
+                           },
                        // Step 0
                        @{
                            TKHighlightViewTag: @(1001),
-                           TKMessage: @"First, press this button.",
-                           TKMessageRelativePoint: msgPoint
+                           TKClickViewTag: @(1001),
+                           TKMessageViewRelativePoint:relPoint,
+                           TKMessage: @"First, press this button."
                            },
                        // Step 1
                        @{
@@ -53,6 +63,7 @@
     NSArray *moreSteps = @[
                            @{
                                TKHighlightViewTag: @(1001),
+                               TKClickViewTag: @(1001),
                                TKMessage: @"Please press this button again.",
                                TKMessageRelativePoint: msgPoint
                                },
