@@ -32,6 +32,6 @@
  @param recurse The block to use to determine whether to continue recursing
  @return Returns the UIView if found or nil
  */
-- (UIView*)findViewRecursively:(BOOL(^)(UIView* subview, BOOL* stop))recurse;
+- (UIView*)findViewRecursively:(BOOL(^)(UIView* subview, BOOL* stop, UIView** customReturnView))recurse;
 
 @end
