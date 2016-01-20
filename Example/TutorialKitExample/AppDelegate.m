@@ -16,10 +16,12 @@
 {
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     self.window.backgroundColor = [UIColor whiteColor];
-    self.window.rootViewController = [[ExampleViewController alloc] init];
+    self.window.rootViewController = [[UINavigationController alloc] initWithRootViewController:[[ExampleViewController alloc] init]];
     
     NSValue *relPoint = [NSValue valueWithCGPoint:
                          CGPointMake(0, -50)];
+    NSValue *relPoint2 = [NSValue valueWithCGPoint:
+                          CGPointMake(0, 50)];
     
     NSValue *msgPoint = [NSValue valueWithCGPoint:
                          CGPointMake(0.5,0.7)];
@@ -29,10 +31,17 @@
                          CGPointMake(0.25,0.8)];
     // set up a simple 3 step tutorial
     NSArray *steps = @[
-                       // Step -1 info
+                       // Step -2 info
                        @{
                            TKMessage: @"Message before tutorial begins",
                            TKMessageRelativePoint: msgPoint,
+                           TKShouldContinue: @YES
+                           },
+                       // Step -1 info
+                       @{
+                           TKMessage: @"UIBarButton demonstration",
+                           TKMessageViewRelativePoint: relPoint2,
+                           TKHighlightViewTag: @(999),
                            TKShouldContinue: @YES
                            },
                        // Step 0

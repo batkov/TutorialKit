@@ -44,12 +44,18 @@
     [btn addTarget:self action:@selector(nextStep:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:btn];
     self.nextButton = btn;
+    
+    UIBarButtonItem * barButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd
+                                                                                target:nil
+                                                                                action:nil];
+    barButton.tag = 999;
+    self.navigationItem.rightBarButtonItem = barButton;
 }
 
 - (void)viewWillLayoutSubviews
 {
     [super viewWillLayoutSubviews];
-
+    
     UIInterfaceOrientation orientation = UIApplication.sharedApplication.statusBarOrientation;
     CGPoint center = self.view.center;
     if(orientation == UIInterfaceOrientationLandscapeLeft ||
