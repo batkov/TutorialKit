@@ -424,6 +424,24 @@
                         }
                     }
                 }
+                if ([subview isKindOfClass:[UITabBar class]]) {
+                    __weak UITabBar *tabbar = (UITabBar*)subview;//we do not want to retain it here
+                    for (UIBarButtonItem *toolBarItem in [tabbar items]) {
+                        if (toolBarItem.tag == tag.integerValue) {
+                            @try {//we need the try block here because valueForKey may throw an exception if the private 'view' Variable is renamed in future iOS Versions, this is highly unlikely though.
+                                UIView *toolbarView = [toolBarItem valueForKey:@"view"];
+                                if (toolbarView && customReturnView != NULL) {//make super sure it worked, and make sure we don't a NULL Pointer Dereference
+                                    *stop = YES;
+                                    *customReturnView = toolbarView;
+                                    return NO;
+                                }
+                            }
+                            @catch (NSException *exception) {
+                                return NO;//we did found the needed ToolbarItem but since we can't access the View we do not need to recurse further.
+                            }
+                        }
+                    }
+                }
                 if ([subview isKindOfClass:[UINavigationBar class]]) {
                     __weak UINavigationBar *navBar = (UINavigationBar*)subview;// do not retain it here
                     for (UINavigationItem *navItem in [navBar items]) {
